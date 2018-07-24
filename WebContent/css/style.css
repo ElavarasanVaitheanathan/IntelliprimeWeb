@@ -264,14 +264,14 @@ div#preloader {
   left: 0;
   width: 100%;
   height: auto;
-  background: rgba(0, 0, 0, 0.40);
+  background: rgb(35, 31, 32);
   z-index: 9;
 }
 
 .navbar-header a.navbar-brand {
   display: inline-block;
-  height: 70px;
-  padding: 15px 0;
+  height: 87px;
+  padding: 0px 0;
 }
 
 .main-menu ul.navbar-nav li {
@@ -375,8 +375,8 @@ div#preloader {
 /*--------------------------------*/
 
 .header-area.stick {
-  background-color: rgba(0, 0, 0, 1);
-  height: 70px;
+  background-color: rgb(35, 31, 32);
+  height: 87px;
   position: fixed;
   top: 0;
   width: 100%;
