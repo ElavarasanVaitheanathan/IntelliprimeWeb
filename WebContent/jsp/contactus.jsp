@@ -6,11 +6,12 @@
     
     String name = request.getParameter("name");
     String email = request.getParameter("email");
-    String subject = request.getParameter("subject");
-    String message = request.getParameter("message");
+    String purpose = request.getParameter("subject");
+    String comment = request.getParameter("message");
+    String mobile = request.getParameter("mobile");
     
     ContactUsService contactUsService = new ContactUsService();
-    String status = contactUsService.saveContact(name, email, subject, message);
+    String status = contactUsService.saveContact(name, email, purpose, comment, mobile);
     
     
     %>

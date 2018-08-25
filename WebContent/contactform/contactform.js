@@ -93,6 +93,7 @@ jQuery(document).ready(function($) {
     $.ajax({
       type: "POST",
       url: "http://www.intelliprime.technology/jsp/contactus.jsp",
+      //url: "http://localhost:8080/IntelliprimeWeb/jsp/contactus.jsp",
       data: str,
       success: function(msg) {
         // alert(msg);
