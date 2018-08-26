@@ -20,7 +20,7 @@ Supports Thumbs: true
 }
 
 .nivo-caption::after {
-  background: #444 none repeat scroll 0 0;
+  /* background: #444 none repeat scroll 0 0; */
   content: "";
   height: 100%;
   left: 0;
@@ -36,7 +36,7 @@ Supports Thumbs: true
 }
 
 .layer-1-1 h2 {
-  color: #fff;
+  
   font-size: 32px;
   font-weight: 700;
 }
