@@ -11,7 +11,7 @@
     String mobile = request.getParameter("mobile");
     
     ContactUsService contactUsService = new ContactUsService();
-    String status = contactUsService.saveContact(name, email, purpose, comment, mobile);
+    String status = contactUsService.saveContact(name, email, purpose, comment, mobile); 
     
     
     %>
