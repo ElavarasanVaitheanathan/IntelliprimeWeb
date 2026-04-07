@@ -10,45 +10,69 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
+      # 1. Checkout code
       - name: Checkout code
         uses: actions/checkout@v3
 
+      # 2. Setup Java
       - name: Set up Java
         uses: actions/setup-java@v3
         with:
           distribution: 'temurin'
           java-version: '11'
 
+      # 3. Build WAR
       - name: Build WAR
         run: mvn clean package
 
+      # 4. List files (debug)
       - name: List built files
         run: ls -la target/
 
-      # ✅ Clean previous deployment (SAFE)
-      - name: Clean previous Tomcat deployment
+      # 5. Clean old deployment
+      - name: Clean previous deployment
         uses: appleboy/ssh-action@v0.1.6
         with:
           host: ${{ secrets.VM_HOST }}
           username: ${{ secrets.VM_USER }}
           key: ${{ secrets.VM_SSH_KEY }}
           script: |
-            echo "Cleaning previous deployment..."
-            rm -rf /opt/tomcat/webapps/IntelliprimeWeb
-            rm -f /opt/tomcat/webapps/IntelliprimeWeb.war
-            echo "Cleanup complete"
+            echo "Cleaning old deployment..."
+            rm -rf /opt/tomcat/webapps/IntelliprimeWeb*
+            rm -rf /opt/tomcat/webapps/ROOT*
+            rm -rf /opt/tomcat/webapps/target
+            echo "Cleanup done"
 
-      # ✅ Copy WAR properly (IMPORTANT FIX)
-      - name: Copy WAR to VM
+      # 6. Copy WAR to /tmp (SAFE way)
+      - name: Copy WAR to VM (/tmp)
         uses: appleboy/scp-action@v0.1.4
         with:
           host: ${{ secrets.VM_HOST }}
           username: ${{ secrets.VM_USER }}
           key: ${{ secrets.VM_SSH_KEY }}
           source: "target/IntelliprimeWeb.war"
-          target: "/opt/tomcat/webapps/"
+          target: "/tmp/"
 
-      # ✅ Restart Tomcat cleanly
+      # 7. Move WAR to Tomcat
+      - name: Deploy WAR to Tomcat
+        uses: appleboy/ssh-action@v0.1.6
+        with:
+          host: ${{ secrets.VM_HOST }}
+          username: ${{ secrets.VM_USER }}
+          key: ${{ secrets.VM_SSH_KEY }}
+          script: |
+            echo "Deploying WAR..."
+
+            # handle both possible paths
+            if [ -f /tmp/target/IntelliprimeWeb.war ]; then
+              mv /tmp/target/IntelliprimeWeb.war /opt/tomcat/webapps/IntelliprimeWeb.war
+            else
+              mv /tmp/IntelliprimeWeb.war /opt/tomcat/webapps/IntelliprimeWeb.war
+            fi
+
+            echo "WAR deployed"
+
+      # 8. Restart Tomcat
       - name: Restart Tomcat
         uses: appleboy/ssh-action@v0.1.6
         with:
@@ -58,9 +82,12 @@ jobs:
           script: |
             echo "Restarting Tomcat..."
             cd /opt/tomcat/bin
-            ./shutdown.sh || echo "Shutdown failed, continuing..."
+
+            ./shutdown.sh || echo "Shutdown failed"
             sleep 10
+
             ./startup.sh
-            sleep 10
-            echo "Tomcat status:"
+            sleep 15
+
+            echo "Tomcat running status:"
             ps aux | grep tomcat
