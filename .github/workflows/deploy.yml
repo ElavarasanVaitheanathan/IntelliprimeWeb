@@ -17,10 +17,13 @@ jobs:
         uses: actions/setup-java@v3
         with:
           distribution: 'temurin'
-          java-version: '17'
+          java-version: '11'
 
       - name: Build WAR
         run: mvn clean package
+
+      - name: List built files
+        run: ls -la target/
 
       - name: Clean previous Tomcat deployment
         uses: appleboy/ssh-action@v0.1.6
@@ -29,10 +32,12 @@ jobs:
           username: ${{ secrets.VM_USER }}
           key: ${{ secrets.VM_SSH_KEY }}
           script: |
+            echo "Cleaning previous deployment..."
             rm -rf /opt/tomcat/webapps/ROOT
             rm -f /opt/tomcat/webapps/ROOT.war
             rm -rf /opt/tomcat/webapps/IntelliprimeWeb
             rm -f /opt/tomcat/webapps/IntelliprimeWeb.war
+            echo "Cleanup complete"
 
       - name: Copy WAR to VM
         uses: appleboy/scp-action@v0.1.4
@@ -40,7 +45,7 @@ jobs:
           host: ${{ secrets.VM_HOST }}
           username: ${{ secrets.VM_USER }}
           key: ${{ secrets.VM_SSH_KEY }}
-          source: "target/*.war"
+          source: "target/IntelliprimeWeb.war"
           target: "/opt/tomcat/webapps/ROOT.war"
 
       - name: Restart Tomcat
@@ -50,8 +55,12 @@ jobs:
           username: ${{ secrets.VM_USER }}
           key: ${{ secrets.VM_SSH_KEY }}
           script: |
+            echo "Restarting Tomcat..."
             cd /opt/tomcat/bin
-            ./shutdown.sh || true
-            sleep 10
+            ./shutdown.sh || echo "Shutdown failed, continuing..."
+            sleep 15
             ./startup.sh
-            sleep 10
+            sleep 15
+            echo "Checking if Tomcat is running..."
+            ps aux | grep tomcat || echo "Tomcat process not found"
+            echo "Tomcat restart complete"
